@@ -4,66 +4,247 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { BarChart3, Boxes, LayoutDashboard, Menu, ReceiptText, Settings2, ShoppingBag, Wallet, X, Landmark, type LucideIcon } from "lucide-react";
+import {
+  ArrowUpRight,
+  BarChart3,
+  Boxes,
+  ChevronRight,
+  ClipboardList,
+  House,
+  Landmark,
+  Menu,
+  Settings2,
+  ShoppingBag,
+  Wallet,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
-type NavItem = { label: string; href: string; icon: LucideIcon };
-const navigation: NavItem[] = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+type Item = { label: string; href: string; icon: LucideIcon };
+type Group = { label: string; items: Item[] };
+
+const groups: Group[] = [
+  {
+    label: "Analytics",
+    items: [
+      { label: "Overview", href: "/", icon: House },
+      { label: "Insights", href: "/insights", icon: BarChart3 },
+      { label: "Reports", href: "/reports", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { label: "Sales", href: "/sales", icon: ShoppingBag },
+      { label: "Orders & delivery", href: "/orders", icon: ClipboardList },
+      { label: "Inventory", href: "/inventory", icon: Boxes },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { label: "Accounts", href: "/accounts", icon: Landmark },
+      { label: "Expenses", href: "/expenses", icon: Wallet },
+    ],
+  },
+  {
+    label: "Workspace",
+    items: [{ label: "Settings", href: "/settings", icon: Settings2 }],
+  },
+];
+const allItems = groups.flatMap((group) => group.items);
+const tabs: Item[] = [
+  { label: "Home", href: "/", icon: House },
+  { label: "Orders", href: "/orders", icon: ClipboardList },
   { label: "Sales", href: "/sales", icon: ShoppingBag },
-  { label: "Expenses", href: "/expenses", icon: Wallet },
-  { label: "Inventory", href: "/inventory", icon: Boxes },
-  { label: "Accounts", href: "/accounts", icon: Landmark },
-  { label: "Reports", href: "/reports", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings2 },
+  { label: "Stock", href: "/inventory", icon: Boxes },
 ];
 
-function Navigation({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
-  return <nav aria-label="Main navigation" className="space-y-1 px-3">{navigation.map(({href,label,icon:Icon}) => {
-    const active = pathname === href;
-    return <Link key={href} href={href} onClick={onNavigate} aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-[background-color,color,transform] duration-200 motion-safe:hover:translate-x-0.5 motion-reduce:transition-none ${active ? "bg-neutral-900 text-white" : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"}`}>
-      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />{label}
-    </Link>;
-  })}</nav>;
+function matchesRoute(pathname: string, href: string) {
+  return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
 }
 
-function SidebarContent({ onNavigate, email }: { onNavigate?: () => void; email: string }) {
-  return <>
-    <Link href="/" onClick={onNavigate} className="flex h-21 items-center gap-3 px-6">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 text-white"><ShoppingBag size={20} strokeWidth={1.8} /></span>
-      <span><span className="block text-lg font-bold tracking-tight">vitristyle</span><span className="block text-[11px] uppercase tracking-widest text-neutral-400">Manager</span></span>
-    </Link>
-    <div className="border-t border-neutral-100 pt-5"><p className="mb-3 px-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-400">Workspace</p><Navigation onNavigate={onNavigate}/></div>
-    <div className="mt-auto border-t border-neutral-100 px-5 py-5"><div className="rounded-xl bg-neutral-50 p-3"><div className="flex items-center gap-2 text-xs font-semibold text-neutral-800"><ReceiptText size={15}/> Signed in</div><p className="mt-2 truncate text-xs text-neutral-500" title={email}>{email}</p><p className="mt-2 text-xs leading-5 text-neutral-500">Phase 4 · Cash & stock control</p></div><div className="mt-3"><SignOutButton /></div></div>
-  </>;
+function Sidebar({ email, onNavigate }: { email: string; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-white">
+      <Link
+        href="/"
+        onClick={onNavigate}
+        className="flex h-[76px] shrink-0 items-center gap-3 border-b border-[#edf0f5] px-6"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563eb] text-xl font-bold text-white">v</span>
+        <span className="min-w-0">
+          <span className="block text-[19px] font-bold tracking-[-.05em] text-[#1c2b43]">vitristyle</span>
+          <span className="block text-xs font-semibold tracking-[.11em] text-[#96a2b5] uppercase">Business Manager</span>
+        </span>
+      </Link>
+      <nav aria-label="All pages" className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-3">
+        {groups.map((group) => (
+          <div key={group.label}>
+            <p className="vs-nav-group-title">{group.label}</p>
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon: Icon }) => {
+                const active = matchesRoute(pathname, href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onNavigate}
+                    aria-current={active ? "page" : undefined}
+                    data-active={active}
+                    className="vs-nav-link"
+                  >
+                    <Icon size={20} strokeWidth={1.85} aria-hidden="true" />
+                    <span className="flex-1">{label}</span>
+                    {active && <ChevronRight size={16} aria-hidden="true" />}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+      <div className="shrink-0 border-t border-[#edf0f5] px-5 py-4">
+        <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-[#f6f8fc] p-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e3ebfc] text-sm font-bold text-[#285cbd]">
+            {email && email !== "Admin" ? email.charAt(0).toUpperCase() : "VS"}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-[#233349]">Signed in</span>
+            <span className="block truncate text-xs text-[#718097]" title={email}>{email}</span>
+          </span>
+        </div>
+        <SignOutButton />
+      </div>
+    </div>
+  );
+}
+
+function MobileTabs({ pathname, onMore, moreOpen }: { pathname: string; onMore: () => void; moreOpen: boolean }) {
+  const otherPage = !tabs.some((tab) => matchesRoute(pathname, tab.href));
+  return (
+    <nav aria-label="Mobile primary navigation" className="vs-mobile-bottom-nav lg:hidden">
+      <div className="grid grid-cols-5 items-stretch">
+        {tabs.map(({ label, href, icon: Icon }) => {
+          const active = matchesRoute(pathname, href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className="vs-mobile-tab"
+              data-active={active}
+            >
+              <Icon size={22} strokeWidth={active ? 2.15 : 1.8} aria-hidden="true" />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={onMore}
+          aria-label="Open more pages"
+          aria-controls="vs-mobile-drawer"
+          aria-expanded={moreOpen}
+          className="vs-mobile-tab"
+          data-active={otherPage || moreOpen}
+        >
+          <Menu size={22} strokeWidth={otherPage || moreOpen ? 2.15 : 1.8} aria-hidden="true" />
+          <span>More</span>
+        </button>
+      </div>
+    </nav>
+  );
 }
 
 export function AppShell({ children, email }: { children: ReactNode; email: string }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const reduced = useReducedMotion();
-  const pageName = navigation.find((n)=>n.href===pathname)?.label ?? "Workspace";
-  return <div className="min-h-screen bg-neutral-50 text-neutral-900">
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-neutral-200 bg-white lg:flex"><SidebarContent email={email} /></aside>
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-4 lg:hidden">
-      <button type="button" aria-label="Open navigation menu" aria-expanded={menuOpen} onClick={()=>setMenuOpen(true)} className="rounded-lg p-2 transition hover:bg-neutral-100"><Menu size={22}/></button>
-      <Link href="/" className="font-bold tracking-tight">vitristyle <span className="font-normal text-neutral-400">Manager</span></Link>
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-xs font-semibold text-white">VS</span>
-    </header>
-    <AnimatePresence>
-      {menuOpen && <div className="fixed inset-0 z-50 lg:hidden">
-        <motion.button type="button" aria-label="Close navigation menu" className="absolute inset-0 bg-black/40" onClick={()=>setMenuOpen(false)} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?0:0.2}} />
-        <motion.aside className="absolute inset-y-0 left-0 flex w-[min(84vw,290px)] flex-col bg-white shadow-xl" initial={reduced?false:{x:"-100%"}} animate={{x:0}} exit={{x:"-100%"}} transition={{duration:reduced?0:0.24,ease:"easeOut"}}>
-          <div className="absolute right-4 top-5 z-10"><button type="button" aria-label="Close menu" onClick={()=>setMenuOpen(false)} className="rounded-lg p-2 hover:bg-neutral-100"><X size={20}/></button></div>
-          <SidebarContent email={email} onNavigate={()=>setMenuOpen(false)} />
-        </motion.aside>
-      </div>}
-    </AnimatePresence>
-    <div className="lg:pl-[248px]">
-      <div className="hidden h-19 items-center justify-between border-b border-neutral-200 bg-white px-8 lg:flex"><div className="text-sm text-neutral-500">Workspace <span className="mx-2 text-neutral-300">/</span><span className="font-medium text-neutral-900">{pageName}</span></div><div className="flex items-center gap-3"><span className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-500">Phase 4 · Live</span><span className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-xs font-semibold text-white">VS</span><span className="max-w-[200px] truncate text-sm font-medium" title={email}>{email}</span></div></div>
-      <main id="main-content" className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9"><motion.div key={pathname} initial={reduced?false:{opacity:0,y:5}} animate={{opacity:1,y:0}} transition={{duration:reduced?0:0.22}}>{children}</motion.div></main>
+  const [menuOpen, setMenuOpen] = useState(false);
+  const section = allItems.find(({ href }) => matchesRoute(pathname, href))?.label ?? "Workspace";
+
+  return (
+    <div className="vs-app-shell min-h-dvh min-w-0 bg-[#f6f8fc] text-[#1a293d]">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-lg focus:bg-white focus:p-3">Skip to main content</a>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[258px] border-r border-[#e7ecf4] bg-white lg:block">
+        <Sidebar email={email} />
+      </aside>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.button
+              type="button"
+              aria-label="Close navigation overlay"
+              onClick={() => setMenuOpen(false)}
+              className="absolute inset-0 h-full w-full bg-[#1a293d]/40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.16 }}
+            />
+            <motion.aside
+              id="vs-mobile-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="All navigation pages"
+              onKeyDown={(event) => { if (event.key === "Escape") setMenuOpen(false); }}
+              className="absolute inset-y-0 left-0 w-[min(88vw,320px)] bg-white shadow-2xl"
+              initial={reduced ? false : { x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={reduced ? { opacity: 0 } : { x: "-100%" }}
+              transition={{ duration: reduced ? 0 : 0.22, ease: "easeOut" }}
+            >
+              <Sidebar email={email} onNavigate={() => setMenuOpen(false)} />
+              <button
+                type="button"
+                autoFocus
+                aria-label="Close menu"
+                onClick={() => setMenuOpen(false)}
+                className="absolute right-3 top-5 flex h-11 w-11 items-center justify-center rounded-xl text-[#708097] hover:bg-[#f4f7fb]"
+              ><X size={21} /></button>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <div className="min-w-0 lg:pl-[258px]">
+        <header className="vs-app-header sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#e7ecf4] bg-white/95 px-4 backdrop-blur-md sm:px-7 lg:h-[68px] lg:px-9">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <button
+              type="button"
+              aria-label="Open all navigation pages"
+              aria-expanded={menuOpen}
+              aria-controls="vs-mobile-drawer"
+              onClick={() => setMenuOpen(true)}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#40526b] hover:bg-[#f4f7fb] lg:hidden"
+            ><Menu size={23} /></button>
+            <span className="hidden text-sm font-semibold text-[#91a0b4] sm:inline">Workspace</span>
+            <ChevronRight size={16} className="hidden text-[#b5becc] sm:inline" aria-hidden="true" />
+            <span className="truncate text-base font-semibold text-[#293950]">{section}</span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="hidden items-center gap-2 rounded-full border border-[#e5eaf2] bg-[#fafbfd] px-3 py-1.5 text-xs font-semibold text-[#66758a] xl:inline-flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#2eaf7d]" /> Private workspace
+            </span>
+            <Link className="vs-btn-secondary hidden sm:inline-flex" href="/orders"><ClipboardList size={17} /> Orders <ArrowUpRight size={15} /></Link>
+            <Link className="vs-btn-primary" href="/sales"><ShoppingBag size={17} /> <span className="hidden min-[390px]:inline">Record sale</span><span className="min-[390px]:hidden">Sale</span></Link>
+          </div>
+        </header>
+        <main id="main-content" className="vs-app-main mx-auto w-full min-w-0 max-w-[1530px] px-4 pt-5 sm:px-7 sm:pt-8 lg:px-9 lg:pb-14">
+          <motion.div
+            key={pathname}
+            initial={reduced ? false : { opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.22, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
+        </main>
+      </div>
+      <MobileTabs pathname={pathname} onMore={() => setMenuOpen(true)} moreOpen={menuOpen} />
     </div>
-  </div>;
+  );
 }

@@ -4,12 +4,21 @@ import type { CategoryTotal } from "@/lib/business";
 import { formatNPR } from "@/lib/format";
 
 export function ExpenseSummary({ categories }: { categories: CategoryTotal[] }) {
-  const total = categories.reduce((sum, c) => sum + c.amount, 0);
-  return <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
-    <div className="flex items-center justify-between gap-2"><div><h2 className="text-base font-semibold">Today's expenses</h2><p className="mt-1 text-xs text-neutral-500">Operating costs by category</p></div><Link href="/expenses" className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-neutral-900">Details <ArrowUpRight size={15} /></Link></div>
-    {categories.length === 0 ? <p className="mt-7 text-sm text-neutral-500">No operating expenses entered today.</p> : <div className="mt-6 space-y-5">{categories.map((c) => <div key={c.category}>
-      <div className="mb-2 flex justify-between text-xs"><span className="font-medium text-neutral-700">{c.category}</span><span className="font-semibold tabular-nums">{formatNPR(c.amount)}</span></div>
-      <div className="h-2 overflow-hidden rounded-full bg-neutral-100"><div className="h-full rounded-full bg-neutral-800 transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${total > 0 ? (c.amount / total) * 100 : 0}%` }} /></div>
-    </div>)}</div>}
-  </section>;
+  const total = categories.reduce((sum, category) => sum + category.amount, 0);
+  return (
+    <section className="vs-card p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-[15px] font-bold text-[#26364c]">Expense breakdown</h2><p className="mt-1 text-xs text-[#8390a2]">Today · operating expenses only</p></div><Link href="/expenses" className="text-[#3064bb]" aria-label="View expenses"><ArrowUpRight size={17}/></Link></div>
+      {categories.length === 0 ? <p className="mt-6 rounded-xl bg-[#f8faff] px-4 py-6 text-xs leading-5 text-[#8390a2]">No operating expenses recorded today.</p> : (
+        <div className="mt-6 space-y-5">
+          {categories.map((category) => {
+            const percent = total > 0 ? Math.min(100, category.amount / total * 100) : 0;
+            return <div key={category.category}>
+              <div className="mb-2 flex items-center justify-between gap-2 text-xs"><span className="font-medium text-[#64758d]">{category.category}</span><span className="font-semibold text-[#2e425f] tabular-nums">{formatNPR(category.amount)}</span></div>
+              <div role="progressbar" aria-label={`${category.category} share of expenses`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} className="h-[6px] overflow-hidden rounded-full bg-[#edf1f7]"><div className="h-full rounded-full bg-[#5686eb] transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${percent}%` }}/></div>
+            </div>;
+          })}
+        </div>
+      )}
+    </section>
+  );
 }

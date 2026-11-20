@@ -1,45 +1,184 @@
 @import "tailwindcss";
 
+/* Slightly larger Tailwind type scale everywhere, without changing the design. */
+@theme {
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+}
+
 :root {
   color-scheme: light;
+  --vs-page: #f6f8fc;
+  --vs-panel: #ffffff;
+  --vs-text: #192437;
+  --vs-muted: #697589;
+  --vs-line: #e6ebf2;
+  --vs-blue: #2563eb;
+  --vs-blue-tint: #eef4ff;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  background: #fafafa;
-  color: #171717;
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--vs-page);
+  color: var(--vs-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button {
-  cursor: pointer;
-}
-
-::selection {
-  background: #e5e5e5;
-  color: #171717;
-}
-
-/* Keyboard-friendly focus states and quiet motion across the application. */
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+::selection { background: #dae8ff; color: #15243b; }
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid #525252;
+  outline: 2px solid #2563eb;
   outline-offset: 3px;
+}
+
+/* Phase 6 design tokens. Shared across the new dashboard and insights. */
+.vs-card {
+  background: var(--vs-panel);
+  border: 1px solid var(--vs-line);
+  border-radius: 17px;
+  box-shadow: 0 1px 2px rgba(19, 39, 73, 0.024);
+}
+.vs-card-hover {
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.vs-card-hover:hover {
+  border-color: #d5e0ef;
+  box-shadow: 0 8px 25px rgba(35, 51, 84, 0.055);
+  transform: translateY(-2px);
+}
+.vs-eyebrow {
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #64748b;
+}
+.vs-muted { color: var(--vs-muted); }
+.vs-btn-primary, .vs-btn-secondary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.vs-btn-primary { background: #2563eb; color: white; border: 1px solid #2563eb; }
+.vs-btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+.vs-btn-secondary { background: white; color: #334155; border: 1px solid var(--vs-line); }
+.vs-btn-secondary:hover { background: #f8faff; border-color: #d3dfef; }
+.vs-btn-primary:active, .vs-btn-secondary:active { transform: scale(.985); }
+.vs-nav-link {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 10px;
+  color: #526176;
+  font-size: 14px;
+  font-weight: 550;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.vs-nav-link:hover { background: #f3f6fc; color: #1d3556; }
+.vs-nav-link[data-active="true"] { background: #eaf2ff; color: #2059c9; font-weight: 650; }
+.vs-nav-link[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -11px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px;
+  background: #3478f6;
+}
+.vs-nav-group-title { padding: 0 12px; margin: 18px 0 8px; font-size: 12px; font-weight: 750; color: #94a3b8; letter-spacing: .12em; text-transform: uppercase; }
+.vs-soft-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border: 1px solid #e8eef9;
+  background: #f3f7ff;
+  color: #3565b5;
+  border-radius: 11px;
+}
+.vs-table-head { background: #f8fafd; color: #66758a; font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; }
+.vs-divider { border-color: var(--vs-line); }
+
+/* Preserve the compact analytics look but bring tiny 10-13px labels into
+   a readable 12-15px range across the dashboard and newer pages. */
+.vs-app-shell [class~="text-[10px]"] { font-size: 12px; }
+.vs-app-shell [class~="text-[11px]"] { font-size: 13px; }
+.vs-app-shell [class~="text-[12px]"] { font-size: 14px; }
+.vs-app-shell [class~="text-[13px]"] { font-size: 15px; }
+
+/* Safe-area aware mobile app shell. These padding rules prevent the fixed tab
+   bar from hiding the last table row, button or form element. */
+.vs-mobile-bottom-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  border-top: 1px solid #e3e9f3;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 -5px 20px rgba(30,46,82,.06);
+  padding: 6px max(5px, env(safe-area-inset-right, 0px))
+           max(7px, env(safe-area-inset-bottom, 0px))
+           max(5px, env(safe-area-inset-left, 0px));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.vs-mobile-tab {
+  display: flex;
+  min-width: 0;
+  min-height: 60px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 12px;
+  color: #76869b;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.vs-mobile-tab[data-active="true"] { background: #eef4ff; color: #245bbd; }
+.vs-mobile-tab:active { transform: scale(.96); }
+.vs-mobile-tab:hover { color: #245bbd; }
+
+@media (max-width: 1023px) {
+  .vs-app-header {
+    height: calc(64px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .vs-app-main {
+    padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px; }
+  .vs-card-hover:active { transform: none; }
+}
+@media (hover: none) {
+  .vs-card-hover:hover { transform: none; box-shadow: 0 1px 2px rgba(19,39,73,.024); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: .01ms !important;
+    transform: none !important;
   }
 }

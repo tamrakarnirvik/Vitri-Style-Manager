@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PeriodReport } from "@/lib/business";
@@ -26,12 +26,7 @@ function parseReport(d:Record<string,unknown>):PeriodReport{
 }
 const csvCell=(v:string|number)=>`"${String(v).replaceAll('"','""')}"`;
 export function ReportsWorkspace(){
- const [from,setFrom]=useState("");const [to,setTo]=useState("");
- useEffect(() => {
-  const today = kathmanduToday();
-  setTo(today);
-  setFrom(dateBefore(today,29));
- }, []);
+ const [from,setFrom]=useState(()=>dateBefore(kathmanduToday(),29));const [to,setTo]=useState(kathmanduToday);
  const [report,setReport]=useState<PeriodReport|null>(null);const [loading,setLoading]=useState(false);const [error,setError]=useState("");
  async function load(e?:FormEvent<HTMLFormElement>){e?.preventDefault();setError("");
   if(!isValidDate(from)||!isValidDate(to)||daysBetween(from,to)<0||daysBetween(from,to)>92){setError("Choose valid dates spanning at most 93 days.");return;}

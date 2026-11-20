@@ -1,10 +1,19 @@
 import Link from "next/link";
+import { ArrowUpRight, PackageCheck } from "lucide-react";
 import type { Product } from "@/lib/business";
 
 export function StockAlerts({ products }: { products: Product[] }) {
-  const low = products.filter((p) => p.stock_quantity <= 5).slice(0,5);
-  return <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-6">
-    <div className="flex items-center justify-between gap-2"><h2 className="font-semibold">Low-stock alerts</h2><Link href="/inventory" className="text-xs font-semibold text-neutral-600 hover:text-neutral-900">Inventory</Link></div>
-    {low.length === 0 ? <p className="mt-5 text-sm text-neutral-500">No products at or below 5 units.</p> : <div className="mt-5 space-y-3">{low.map((p) => <div key={p.id} className="flex items-center justify-between gap-4 rounded-xl bg-neutral-50 px-3 py-3"><div><p className="text-sm font-medium">{p.name}</p><p className="mt-1 text-xs text-neutral-500">{p.sku}</p></div><span className="whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">{p.stock_quantity} left</span></div>)}</div>}
-  </section>;
+  const low = products.filter((p) => p.is_active && p.stock_quantity <= 5).sort((a,b) => a.stock_quantity - b.stock_quantity).slice(0, 5);
+  return (
+    <section className="vs-card p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-[15px] font-bold text-[#26364c]">Stock alerts</h2><p className="mt-1 text-xs text-[#8390a2]">Active products with 5 units or less</p></div><Link href="/inventory" className="text-[#3064bb]" aria-label="View inventory"><ArrowUpRight size={17}/></Link></div>
+      {low.length === 0 ? (
+        <div className="mt-5 flex items-center gap-3 rounded-xl bg-[#f5faf8] px-4 py-4"><PackageCheck size={20} className="text-[#26946c]"/><p className="text-xs font-medium text-[#548574]">No low-stock products found in the loaded inventory.</p></div>
+      ) : (
+        <div className="mt-4 space-y-2">
+          {low.map((product) => <div key={product.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#eef1f6] px-3.5 py-3"><div className="min-w-0"><p className="truncate text-[12px] font-semibold text-[#32435d]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#94a0b2]">{product.sku}</p></div><span className="whitespace-nowrap rounded-lg bg-[#fff4e3] px-2 py-1 text-[11px] font-bold text-[#ae7622]">{product.stock_quantity} left</span></div>)}
+        </div>
+      )}
+    </section>
+  );
 }

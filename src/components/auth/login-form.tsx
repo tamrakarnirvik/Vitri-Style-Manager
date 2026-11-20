@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
@@ -16,13 +17,9 @@ export function LoginForm() {
     if (loading) return;
     setLoading(true);
     setError("");
-
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) {
         setError("Incorrect credentials or an account that is not confirmed.");
         return;
@@ -30,30 +27,23 @@ export function LoginForm() {
       router.replace("/");
       router.refresh();
     } catch {
-      setError("Could not connect. Check your internet connection and Supabase settings.");
+      setError("Unable to connect. Check your internet connection and Supabase settings.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-xl font-semibold text-neutral-900">Welcome back</h2>
-      <p className="mt-1 text-sm text-neutral-500">Sign in to access your business dashboard.</p>
-
-      <label htmlFor="email" className="mt-6 block text-sm font-medium text-neutral-700">Email address</label>
-      <input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading}
-        className="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-3 py-3 text-sm outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200" placeholder="your@email.com" />
-
-      <label htmlFor="password" className="mt-4 block text-sm font-medium text-neutral-700">Password</label>
-      <input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading}
-        className="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-3 py-3 text-sm outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200" placeholder="Enter password" />
-
-      {error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-
-      <button type="submit" disabled={loading} className="mt-6 w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-60">
-        {loading ? "Signing in…" : "Sign in"}
-      </button>
+    <form onSubmit={handleSubmit} className="vs-card p-6 shadow-sm sm:p-8">
+      <span className="vs-soft-icon mb-5"><LockKeyhole size={18}/></span>
+      <h2 className="text-[25px] font-bold tracking-[-.04em] text-[#1f314b]">Welcome back</h2>
+      <p className="mt-1.5 text-sm leading-6 text-[#7b889c]">Sign in to access your business dashboard.</p>
+      <label htmlFor="email" className="mt-6 block text-sm font-semibold text-[#52647c]">Email address</label>
+      <input id="email" type="email" autoComplete="email" required disabled={loading} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" className="mt-2 w-full rounded-[10px] border border-[#e2e9f2] min-h-12 px-3.5 py-3 text-base sm:text-sm text-[#283954] outline-none focus:border-[#729ef2] focus:ring-2 focus:ring-[#e6efff]"/>
+      <label htmlFor="password" className="mt-4 block text-sm font-semibold text-[#52647c]">Password</label>
+      <input id="password" type="password" autoComplete="current-password" required disabled={loading} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" className="mt-2 w-full rounded-[10px] border border-[#e2e9f2] min-h-12 px-3.5 py-3 text-base sm:text-sm text-[#283954] outline-none focus:border-[#729ef2] focus:ring-2 focus:ring-[#e6efff]"/>
+      {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <button type="submit" disabled={loading} className="vs-btn-primary mt-6 w-full py-3">{loading ? "Signing in…" : "Sign in"}<ArrowRight size={17}/></button>
     </form>
   );
 }
